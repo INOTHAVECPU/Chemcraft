@@ -793,6 +793,62 @@
         /* Keep drag transforms immediate; board cards retain their original natural size. */
         .item.board-item { transition: background-color .2s, border-color .2s, color .2s; }
         .item.board-item:hover { transform: none; }
+/* New controls follow the existing colors, borders and compact item design. */
+#board { min-width:0; }
+.item.board-item { max-width:calc(100% - 20px); overflow-wrap:anywhere; touch-action:none; transition:background-color .2s,border-color .2s,color .2s; }
+.item.board-item:hover,.item.board-item:active { transform:none; }
+.item.board-item.dragging { will-change:transform; z-index:999990!important; }
+#inventoryItems .item { max-width:100%; box-sizing:border-box; overflow-wrap:anywhere; }
+#inventorySearch { font-size:16px; }
+#workTools { display:flex; flex-wrap:wrap; gap:7px; margin:0 0 12px; }
+.tool-button,.dialog-action { border:1px solid var(--border-item); background:var(--bg-item); color:var(--text-item); border-radius:8px; padding:8px 10px; font:inherit; font-size:14px; cursor:pointer; }
+.tool-button:hover,.dialog-action:hover { border-color:var(--accent); }
+button:disabled { opacity:.45; cursor:default; }
+button:focus-visible,[role=button]:focus-visible,summary:focus-visible,input:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
+#saveIndicator { color:var(--text-tip); font-size:12px; margin:0 0 8px; min-height:17px; }
+#zoneSummary { position:relative; z-index:999995; pointer-events:auto; margin:0 10px 8px; max-width:calc(100% - 20px); max-height:64px; overflow:auto; border-radius:6px; background:var(--panel-bg); color:var(--text-item); font-size:13px; padding:4px 7px; box-sizing:border-box; }
+#zoneSummary summary { cursor:pointer; line-height:1.5; }
+#zoneCounts { line-height:1.65; overflow-wrap:anywhere; }
+#settingsPanel,#achievementPanel { max-width:calc(100% - 40px); }
+.settings-extra { display:flex; flex-wrap:wrap; gap:8px; border-top:1px solid var(--border-item); margin-top:14px; padding-top:12px; }
+.settings-help { color:var(--text-tip); font-size:13px; line-height:1.55; margin:12px 0 0; }
+#notice { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); max-width:calc(100vw - 40px); padding:10px 16px; border-radius:9px; border:1px solid var(--border-item); color:var(--panel-text); background:var(--panel-bg); box-shadow:0 3px 14px var(--panel-shadow); z-index:9999999; font-size:14px; pointer-events:none; }
+#notice[hidden] { display:none; }
+.game-dialog { padding:20px; border:1px solid var(--border-item); border-radius:12px; width:620px; max-width:calc(100vw - 32px); max-height:calc(100dvh - 32px); box-sizing:border-box; background:var(--panel-bg); color:var(--panel-text); font-family:inherit; }
+.game-dialog::backdrop { background:rgba(0,0,0,.42); }
+.game-dialog h2 { font-size:20px; margin:0; }
+.dialog-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+.dialog-description { font-size:14px; line-height:1.6; color:var(--text-tip); }
+.dialog-list { display:flex; flex-direction:column; gap:8px; margin:14px 0; }
+.recipe-choice { text-align:left; line-height:1.6; white-space:normal; color:var(--panel-text); }
+.recipe-choice strong { display:block; color:var(--text-item); }
+.recipe-choice small { display:block; font-size:13px; color:var(--text-tip); }
+.game-dialog input[type=search] { width:100%; box-sizing:border-box; padding:10px; border:1px solid var(--border-item); border-radius:8px; background:var(--bg-item); color:var(--panel-text); font:inherit; }
+.notebook-entry { border:1px solid var(--border-item); border-radius:8px; padding:10px 12px; font-size:14px; line-height:1.65; overflow-wrap:anywhere; }
+.notebook-entry summary { cursor:pointer; color:var(--text-item); font-weight:bold; }
+.notebook-entry p { margin:8px 0 0; }
+.notebook-entry ul { padding-left:20px; margin:8px 0; }
+#perfStage { position:relative; height:180px; overflow:hidden; border:1px solid var(--border-item); border-radius:8px; background:var(--bg-body); }
+#perfStage .item { position:absolute; margin:0; font-size:12px; padding:5px 8px; box-sizing:border-box; width:90px; height:32px; white-space:nowrap; overflow:hidden; pointer-events:none; transition:none; }
+.performance-table { border-collapse:collapse; width:100%; font-size:13px; margin:12px 0; }
+.performance-table th,.performance-table td { padding:8px 4px; text-align:right; border-bottom:1px solid var(--border-item); }
+.performance-table th:first-child,.performance-table td:first-child { text-align:left; }
+.dialog-footer { display:flex; gap:8px; justify-content:flex-end; margin-top:12px; flex-wrap:wrap; }
+@media(max-width:700px) {
+ #inventory { padding:12px; }
+ #workTools { margin-bottom:8px; }
+ #zoneSummary { font-size:12px; max-height:50px; margin-bottom:5px; }
+ #mixZoneLabel { font-size:12px; margin-bottom:5px; }
+ .tip { max-width:calc(100% - 40px); font-size:12px; max-height:55px; overflow:auto; }
+ .game-dialog { padding:16px; }
+ .settings-row { flex-wrap:wrap; gap:7px; }
+}
+@media(prefers-reduced-motion:reduce) {
+ .item,.new-discovery,.achievement-toast { animation:none!important; transition:none!important; }
+ #tsunamiOverlay,#floodOverlay { display:none!important; }
+}
+#settingsPanel { max-height:calc(100% - 92px); overflow-y:auto; overscroll-behavior:contain; }
+
 </style>
 </head>
 <body>
@@ -859,23 +915,56 @@
                     <button class="zoneSizeBtn" data-size="large" type="button">ใหญ่</button>
                 </div>
             </div>
+            <div class="settings-extra"><button type="button" id="exportSaveBtn" class="tool-button">ส่งออกเซฟ</button><button type="button" id="importSaveBtn" class="tool-button">นำเข้าเซฟ</button><button type="button" id="performanceBtn" class="tool-button">ทดสอบความลื่น</button></div>
+            <p class="settings-help">Undo ย้อนการเพิ่ม ย้าย ผสม ลบ และล้างบอร์ดได้สูงสุด 100 ครั้งในหน้านี้ สารที่ค้นพบแล้วจะยังอยู่ในสมุด</p>
         </div>
 
         <!-- โซนรวมสาร: สำหรับตอนที่ต้องผสมธาตุหลายๆ ตัวพร้อมกันแต่ลากมาแตะกันเป๊ะๆ ยาก
              แค่ลากธาตุมากองไว้ในกรอบนี้แบบหลวมๆ (ไม่ต้องแตะกันก็ได้) แล้วกดปุ่ม "รวม" -->
         <div id="mixZone" class="zone-small">
-            <div id="mixZoneLabel">โซนรวมสาร<br>(ลากธาตุมากองในนี้ แล้วกดรวม)</div>
+            <details id="zoneSummary"><summary id="zoneCountLabel">ในโซน 0 ชิ้น</summary><div id="zoneCounts"></div></details><div id="mixZoneLabel">โซนรวมสาร<br>(ลากธาตุมากองในนี้ แล้วกดรวม)</div>
             <button id="mixZoneBtn" type="button">⚗️ รวม</button>
         </div>
     </div>
     
     <div id="inventory">
         <div class="inventory-title">สารตั้งต้นของคุณ</div>
+        <div id="workTools"><button id="undoBtn" type="button" class="tool-button" disabled>↶ Undo</button><button id="notebookBtn" type="button" class="tool-button">📖 สมุดสาร</button></div><div id="saveIndicator" role="status"></div>
         <input aria-label="ค้นหาธาตุหรือสาร" type="text" id="inventorySearch" placeholder="🔍 ค้นหาธาตุ/สาร...">
         <div id="inventoryItems"></div>
     </div>
 
-    <script>
+    <div id="notice" role="status" aria-live="polite" hidden></div>
+<dialog id="recipeDialog" class="game-dialog" aria-labelledby="recipeHeading">
+ <div class="dialog-heading"><h2 id="recipeHeading">เลือกผลผสม</h2><button type="button" class="dialog-action" data-close="recipeDialog">ยกเลิก</button></div>
+ <p class="dialog-description">เลือกสารที่ต้องการสร้าง รายการที่ใช้วัตถุดิบมากที่สุดอยู่ด้านบน วัตถุดิบและอะตอมที่เหลือจะคืนบนบอร์ด</p>
+ <div id="recipeChoices" class="dialog-list"></div>
+</dialog>
+<dialog id="notebookDialog" class="game-dialog" aria-labelledby="notebookHeading">
+ <div class="dialog-heading"><h2 id="notebookHeading">สมุดสารที่ค้นพบ</h2><button type="button" class="dialog-action" data-close="notebookDialog">ปิด</button></div>
+ <p class="dialog-description">ชื่อ สูตร และการจับคู่ที่คุณเคยใช้ในเกม สูตรในสมุดนี้ไม่ใช่วิธีทดลองสารจริง</p>
+ <input id="notebookSearch" type="search" placeholder="ค้นหาชื่อหรือสูตร" aria-label="ค้นหาในสมุดสาร">
+ <p id="notebookCount" class="dialog-description" aria-live="polite"></p><div id="notebookList" class="dialog-list"></div>
+ <button id="notebookMore" class="dialog-action" type="button" hidden>แสดงเพิ่ม</button>
+</dialog>
+<dialog id="importDialog" class="game-dialog" aria-labelledby="importHeading">
+ <div class="dialog-heading"><h2 id="importHeading">นำเข้าเซฟ</h2><button type="button" class="dialog-action" data-close="importDialog">ยกเลิก</button></div>
+ <p id="importSummary" class="dialog-description"></p>
+ <p class="dialog-description">เซฟนี้จะมาแทนเกมที่เปิดอยู่ กด Undo เพื่อกลับไปก่อนนำเข้าได้จนกว่าจะปิดหรือรีเฟรชหน้า</p>
+ <div class="dialog-footer"><button type="button" class="dialog-action" data-close="importDialog">ยกเลิก</button><button id="confirmImport" type="button" class="dialog-action">ใช้เซฟนี้</button></div>
+</dialog>
+<dialog id="perfDialog" class="game-dialog" aria-labelledby="perfHeading">
+ <div class="dialog-heading"><h2 id="perfHeading">ทดสอบความลื่น</h2><button type="button" class="dialog-action" data-close="perfDialog">ปิด</button></div>
+ <p class="dialog-description">ทดสอบไอเทม 100 / 300 / 1,000 ชิ้นบนพื้นที่จำลองแยกจากเกม ใช้เวลาประมาณ 5–10 วินาที เปิดหน้านี้ค้างไว้ระหว่างทดสอบ ผลขึ้นกับเครื่องและเบราว์เซอร์</p>
+ <div id="perfStage" aria-hidden="true"></div><p id="perfStatus" class="dialog-description" role="status">พร้อมทดสอบ</p>
+ <table class="performance-table"><thead><tr><th>ไอเทม</th><th>FPS โดยประมาณ</th><th>เฟรม P95 (ms)</th><th>ตรวจกลุ่ม (ms)</th><th>ค้นสูตร (ms)</th></tr></thead><tbody id="perfResults"></tbody></table>
+ <p class="dialog-description">P95 คือเวลาเฟรมที่ 95% ของเฟรมใช้ไม่เกินค่านี้ ค่าต่ำดีกว่า FPS นี้วัดการขยับไอเทมหนึ่งชิ้นในพื้นที่ทดสอบ ไม่ใช่การรับรอง FPS ทุกสถานการณ์</p>
+ <button id="runBenchmark" class="dialog-action" type="button">เริ่มทดสอบ</button>
+</dialog>
+<input id="importFile" type="file" accept="application/json,.json" hidden>
+
+<script>
+
 
 const recipes = {
     // วัสดุใหม่: สูตรจับคู่เชิงเกม
@@ -3781,29 +3870,6 @@ const commonNames = {
     "C12H25NaO4S": "โซเดียมลอริลซัลเฟต (สารทำฟองในแชมพู)"
 };
 
-let unlocked = [
-    "H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si", "P", "S", "Cl", "Ar", "K", "Ca",
-    "Sc", "Ti", "V", "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br", "Kr", "Rb", "Sr", "Y", "Zr",
-    "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag", "Cd", "In", "Sn", "Sb", "Te", "I", "Xe", "Cs", "Ba", "La", "Ce", "Pr", "Nd",
-    "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu", "Hf", "Ta", "W", "Re", "Os", "Ir", "Pt", "Au", "Hg",
-    "Tl", "Pb", "Bi", "Po", "At", "Rn", "Fr", "Ra", "Ac", "Th", "Pa", "U", "Np", "Pu", "Am", "Cm", "Bk", "Cf", "Es", "Fm",
-    "Md", "No", "Lr", "Rf", "Db", "Sg", "Bh", "Hs", "Mt", "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts", "Og"
-];
-
-const unlockedSet = new Set(unlocked);
-        
-        const board = document.getElementById('board');
-        const inventory = document.getElementById('inventory');
-        const mixZone = document.getElementById('mixZone');
-        const mixZoneBtn = document.getElementById('mixZoneBtn');
-        const mixZoneLabel = document.getElementById('mixZoneLabel');
-        let zIndexCounter = 1; // ตัวแปรทำให้ไอเทมที่จับล่าสุดลอยอยู่บนสุด
-        let spawnCounter = 0; // ตัวนับตำแหน่งกระจายไอเทมใหม่ ไม่ให้ซ้อนจุดเดิมทุกครั้ง
-
-        // ===== ระบบความสำเร็จ (Achievement): นับจำนวน "สารใหม่" ที่ผู้เล่นสร้างขึ้นเองในรอบเล่นนี้ =====
-
-        // ===== ระบบความสำเร็จ (Achievement): นับจำนวน "สารใหม่" ที่ผู้เล่นสร้างขึ้นเองในรอบเล่นนี้ =====
-
         const achievements = [
 
             { id: 5,    count: 5,    icon: "🧪", title: "นักเคมีมือใหม่",     desc: "สร้างสารใหม่ครบ 5 ชนิด" },
@@ -3819,591 +3885,716 @@ const unlockedSet = new Set(unlocked);
             { id: "doctor", trigger: "Doctor", secret: true, icon: "👨‍⚕️", title: "นายเเพทย์เเฮกเกอร์", desc: "รายได้จาก Netflix" },
             { id: "gilgamesh", trigger: "Flood", secret: true, icon: "💧", title: "มหากาพย์กิลกาเมช", desc: "พี่ชายทำน้ำท่วมโลก 🗣️🗣️🔥🔥" },
         ];
-        let discoveryCount = 0; // จำนวนสารใหม่ที่สร้างสำเร็จสะสมในรอบเล่นนี้
-        const unlockedAchievements = new Set(); // เก็บ id ของ achievement ที่ปลดล็อกไปแล้ว
-
-        // ===== ระบบบันทึกอัตโนมัติ (Autosave) ลง localStorage =====
-
-        const SAVE_KEY = 'chemcraft_save_v1';
-        let saveTimer=null;
-        function saveGame(){clearTimeout(saveTimer);saveTimer=setTimeout(flushSave,250);}
-        window.addEventListener("pagehide",flushSave);
-        document.addEventListener("visibilitychange",()=>{if(document.hidden)flushSave();});
-        function flushSave() {
-            clearTimeout(saveTimer);
-            try {
-                localStorage.setItem(SAVE_KEY, JSON.stringify({
-                    unlocked,
-                    discoveryCount,
-                    unlockedAchievements: Array.from(unlockedAchievements),
-                    theme: currentTheme,
-                    zoneSize: currentZoneSize,
-                }));
-            } catch (err) {
-
-            }
-        }
-        function loadGame() {
-            try {
-                const raw = localStorage.getItem(SAVE_KEY);
-                return raw ? JSON.parse(raw) : null;
-            } catch (err) {
-                return null; // ข้อมูลเสีย/อ่านไม่ได้ -> เริ่มเกมใหม่แบบปกติแทนที่จะพัง
-            }
-        }
-
-        let currentTheme = 'light';
-        let currentZoneSize = 'small';
-
-        function checkAchievements(newResultId) {
-            discoveryCount++;
-            achievements.forEach(ach => {
-                if (unlockedAchievements.has(ach.id)) return; // ปลดล็อกไปแล้ว ข้าม
-                const meetsCondition = ach.trigger
-                    ? ach.trigger === newResultId
-                    : discoveryCount >= ach.count;
-                if (meetsCondition) {
-                    unlockedAchievements.add(ach.id);
-                    showAchievementToast(ach);
-                }
-            });
-            renderAchievementPanel(); // อัปเดตแผง + ตัวเลขบนปุ่มให้ตรงกันเสมอ
-            saveGame(); // บันทึกทันทีทุกครั้งที่ค้นพบสารใหม่ (unlocked/discoveryCount/unlockedAchievements ล่าสุด)
-        }
-
-        function showAchievementToast(ach) {
-            const layer = document.getElementById('achievementToastLayer');
-            const toast = document.createElement('div');
-            toast.className = 'achievement-toast';
-            toast.innerHTML =
-                `<span class="achievement-toast-icon">${ach.icon}</span>` +
-                `<span>ปลดล็อกความสำเร็จ! <br><span class="achievement-toast-sub">${ach.title} — ${ach.desc}</span></span>`;
-            layer.appendChild(toast);
-
-            setTimeout(() => toast.remove(), 4400);
-        }
-
-        function renderAchievementPanel() {
-            const list = document.getElementById('achievementList');
-            const subtitle = document.getElementById('achievementPanelSubtitle');
-            const badge = document.getElementById('achievementBadge');
-
-            subtitle.textContent = `สร้างสารใหม่ไปแล้ว ${discoveryCount} ชนิด`;
-            badge.textContent = `${unlockedAchievements.size}/${achievements.length}`;
-
-            list.innerHTML = '';
-            achievements.forEach(ach => {
-                const isUnlocked = unlockedAchievements.has(ach.id);
-                const row = document.createElement('div');
-                row.className = 'achievement-item' + (isUnlocked ? ' unlocked' : '');
-
-                if (ach.secret && !isUnlocked) {
-
-                    row.innerHTML =
-                        `<span class="achievement-icon">❓</span>` +
-                        `<span class="achievement-text">` +
-                            `<div class="achievement-title">???</div>` +
-                            `<div class="achievement-desc">???</div>` +
-                        `</span>`;
-                } else {
-                    row.innerHTML =
-                        `<span class="achievement-icon">${ach.icon}</span>` +
-                        `<span class="achievement-text">` +
-                            `<div class="achievement-title">${ach.title}</div>` +
-                            `<div class="achievement-desc">${ach.desc}${(!isUnlocked && ach.count) ? ` (${discoveryCount}/${ach.count})` : ''}</div>` +
-                        `</span>` +
-                        (isUnlocked ? `<span class="achievement-check">✅</span>` : '');
-                }
-                list.appendChild(row);
-            });
-        }
-
+'use strict';
+// 1. Recipe indexes and display text. All chemistry pairings below belong to the game.
+const $ = id => document.getElementById(id);
+const initialElements = Object.keys(elementsData);
+const elementSet = new Set(initialElements);
+const board = $('board');
+const mixZone = $('mixZone');
+const boardItems = new Map();
+const knownIds = new Set(initialElements);
 const displayCache = new Map();
-function itemInfo(id) {
-    if (displayCache.has(id)) return displayCache.get(id);
-    const full = elementsData[id]?.name || commonNames[id] || resultToRecipe[id]?.name || id;
-    // Parentheses immediately following a name, e.g. (II), belong to its chemical name.
-    const split = full.search(/\s+\(/);
-    const name = split < 0 ? full : full.slice(0, split);
-    const note = split < 0 ? '' : full.slice(split).trim().replace(/^\(|\)$/g, '');
-    const formula = /^(?:[A-Z][a-z]?\d*|[()])+$/ .test(id) && !['Paper','Glass','Steel'].includes(id);
-    const info = { name, note, full, formula, search: (id+' '+full).toLocaleLowerCase() };
-    displayCache.set(id, info);
+const resultToRecipe = Object.create(null);
+const resultElementalTally = Object.create(null);
+const recipeByKey = new Map();
+const recipeIndex = { elemental: new Map(), specific: new Map() };
+function parseFormulaKey(rawKey) {
+    const tally = Object.create(null);
+    for (const token of rawKey.split('+')) {
+        const match = token.trim().match(/^(\d*)([A-Za-z][\w()]*)$/);
+        if (!match) continue;
+        tally[match[2]] = (tally[match[2]] || 0) + Number(match[1] || 1);
+    }
+    return tally;
+}
+function canonicalKeyFromTally(tally) {
+    return Object.keys(tally).sort().map(id => id + ':' + tally[id]).join('|');
+}
+for (const [raw, recipe] of Object.entries(recipes)) {
+    knownIds.add(recipe.result);
+    if (!resultToRecipe[recipe.result]) resultToRecipe[recipe.result] = recipe;
+    if (!resultElementalTally[recipe.result]) resultElementalTally[recipe.result] = parseFormulaKey(raw);
+    const need = parseFormulaKey(raw);
+    recipeByKey.set(canonicalKeyFromTally(need), { recipe, need });
+}
+let recipeOrder = 0;
+for (const [key, entry] of recipeByKey) {
+    entry.key = key;
+    entry.order = recipeOrder++;
+    entry.entries = Object.entries(entry.need);
+    entry.elemental = entry.entries.every(([id]) => elementSet.has(id));
+    entry.count = entry.entries.reduce((sum, [, n]) => sum + n, 0);
+    const index = entry.elemental ? recipeIndex.elemental : recipeIndex.specific;
+    const anchor = entry.entries[0]?.[0];
+    if (!index.has(anchor)) index.set(anchor, []);
+    index.get(anchor).push(entry);
+}
+const pureCache = new Map();
+function getPureElementInfo(id) {
+    if (pureCache.has(id)) return pureCache.get(id);
+    const tally = resultElementalTally[id];
+    const ids = tally ? Object.keys(tally) : [];
+    const info = elementSet.has(id) ? { element: id, count: 1 } :
+        ids.length === 1 && elementSet.has(ids[0]) ? { element: ids[0], count: tally[ids[0]] } : null;
+    pureCache.set(id, info);
     return info;
 }
-function getElementDisplay(id) {
-    const full = itemInfo(id).full;
-    return (elementsData[id] || commonNames[id] || resultToRecipe[id]) ? `${full}(${id})` : id;
-}
-function fillItemLabel(el, id) {
-    el.textContent = getElementDisplay(id);
-    el.title = el.textContent;
-    el.setAttribute('aria-label', el.textContent);
-}
-
-        function createInventoryItemEl(id) {
-            const el = document.createElement('div');
-            el.className = 'item';
-            el.setAttribute('role', 'button');
-            el.tabIndex = 0;
-            fillItemLabel(el, id);
-
-            el.onclick = () => {
-
-                const cols = 4;
-                const idx = spawnCounter % (cols * cols);
-                spawnCounter++;
-                const offsetX = ((idx % cols) - (cols - 1) / 2) * 160;
-                const offsetY = (Math.floor(idx / cols) - (cols - 1) / 2) * 80;
-
-                const anchorX = board.clientWidth * 0.32;
-                const anchorY = board.clientHeight * 0.72;
-
-                const itemW = 120, itemH = 50, margin = 10;
-                const rawX = anchorX - 50 + offsetX;
-                const rawY = anchorY - 20 + offsetY;
-                const clampedX = Math.max(margin, Math.min(rawX, board.clientWidth - itemW - margin));
-                const clampedY = Math.max(margin, Math.min(rawY, board.clientHeight - itemH - margin));
-                spawnOnBoard(id, clampedX, clampedY);
-                updateZoneHighlights();
-            };
-            el.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.onclick(); } };
-            return el;
-        }
-
-        const inventoryNodeCache = new Map();
-        function renderInventory() {
-            const container = document.getElementById('inventoryItems');
-            const query = document.getElementById('inventorySearch').value.trim().toLocaleLowerCase();
-            const fragment = document.createDocumentFragment();
-            let count=0;
-            for (const id of unlocked) {
-                if (query && !itemInfo(id).search.includes(query)) continue;
-                let node=inventoryNodeCache.get(id);
-                if (!node) { node=createInventoryItemEl(id); inventoryNodeCache.set(id,node); }
-                fragment.appendChild(node); count++;
-            }
-            if (!count) { const empty=document.createElement('div'); empty.className='no-results'; empty.textContent='ไม่พบธาตุหรือสารที่ค้นหา'; fragment.appendChild(empty); }
-            container.replaceChildren(fragment);
-        }
-
-        function addInventoryItem(id) {
-            const inventoryItems = document.getElementById('inventoryItems');
-            const searchInput = document.getElementById('inventorySearch');
-            const query = searchInput ? searchInput.value.trim().toLowerCase() : '';
-
-            if (query) {
-                const display = getElementDisplay(id).toLowerCase();
-                if (!id.toLowerCase().includes(query) && !display.includes(query)) return;
-            }
-
-            const noResults = inventoryItems.querySelector('.no-results');
-            if (noResults) noResults.remove();
-
-            const node=createInventoryItemEl(id); inventoryNodeCache.set(id,node); inventoryItems.appendChild(node);
-        }
-
-        function spawnOnBoard(elementId, x, y, isNew=false) {
-            const el=document.createElement('div'); el.className='item board-item'; el.dataset.id=elementId;
-            fillItemLabel(el,elementId,true); el.tabIndex=0;
-            let px=Math.max(0,x), py=Math.max(0,y);
-            el.style.left=px+'px';el.style.top=py+'px';
-            board.appendChild(el);
-            let width=el.offsetWidth,height=el.offsetHeight;
-            px=Math.max(0,Math.min(px,board.clientWidth-width));
-            py=Math.max(0,Math.min(py,board.clientHeight-height));
-            el.style.left=px+'px'; el.style.top=py+'px'; el.style.zIndex=zIndexCounter++;
-            let active=null, sx=0,sy=0,dx=0,dy=0,frame=0,lastTap=0,maxX=0,maxY=0,zone;
-            const draw=()=> { frame=0; el.style.transform=`translate3d(${dx}px,${dy}px,0)`;
-                const cx=px+dx+width/2,cy=py+dy+height/2;
-                el.classList.toggle('in-zone',cx>=zone.l&&cx<=zone.r&&cy>=zone.t&&cy<=zone.b);
-            };
-            const move=e=> { dx=Math.max(-px,Math.min(e.clientX-sx,maxX-px)); dy=Math.max(-py,Math.min(e.clientY-sy,maxY-py)); };
-            el.onpointerdown=e=> {
-                if(active!==null || e.button!==0) return;
-                active=e.pointerId; el.setPointerCapture(active); sx=e.clientX;sy=e.clientY;dx=dy=0;
-                px=parseFloat(el.style.left);py=parseFloat(el.style.top);
-                width=el.offsetWidth;height=el.offsetHeight;
-                maxX=Math.max(0,board.clientWidth-width);maxY=Math.max(0,board.clientHeight-height);
-                zone={l:mixZone.offsetLeft,t:mixZone.offsetTop,r:mixZone.offsetLeft+mixZone.offsetWidth,b:mixZone.offsetTop+mixZone.offsetHeight};
-                el.style.zIndex=zIndexCounter++;el.style.willChange='transform';
-            };
-            el.onpointermove=e=> { if(e.pointerId!==active)return;move(e);if(!frame)frame=requestAnimationFrame(draw); };
-            const finish=(e,cancelled=false)=> {
-                if(e.pointerId!==active)return;
-                if(!cancelled)move(e);
-                if(frame)cancelAnimationFrame(frame);frame=0;
-                const pointer=active;active=null;
-                if(el.hasPointerCapture(pointer))el.releasePointerCapture(pointer);
-                const moved=Math.abs(dx)>6||Math.abs(dy)>6;
-                px+=dx;py+=dy;el.style.left=px+'px';el.style.top=py+'px';el.style.transform='';el.style.willChange='auto';
-                if(!cancelled&&!moved) {const now=performance.now();if(lastTap&&now-lastTap<350){el.remove();return;}lastTap=now;}else lastTap=0;
-                dx=dy=0;
-                updateZoneHighlights();
-                if(!cancelled&&!el.classList.contains('in-zone'))checkCrafting(el);
-                updateZoneHighlights();
-            };
-            el.onpointerup=e=>finish(e);el.onpointercancel=e=>finish(e,true);
-            el.onlostpointercapture=e=>finish(e,true);
-            el.onkeydown=e=>{if(e.key==='Delete'||e.key==='Backspace'){e.preventDefault();el.remove();}};
-            board.appendChild(el);
-            if(isNew){el.classList.add('new-discovery');setTimeout(()=>el.classList.remove('new-discovery'),500);}
-            return el;
-        }
-
-        function parseFormulaKey(rawKey) {
-            const tally = {};
-            rawKey.split('+').forEach(tok => {
-                tok = tok.trim();
-                if (!tok) return;
-                const m = tok.match(/^(\d*)([A-Za-z][\w()]*)$/);
-                if (!m) return;
-                const count = m[1] ? parseInt(m[1], 10) : 1;
-                const id = m[2];
-                tally[id] = (tally[id] || 0) + count;
-            });
-            return tally;
-        }
-
-        function canonicalKeyFromTally(tally) {
-            return Object.keys(tally).sort()
-                .map(id => (tally[id] > 1 ? tally[id] + id : id))
-                .join('+');
-        }
-
-        function buildCanonicalRecipes() {
-            const map = {};
-            for (const rawKey in recipes) {
-                const tally = parseFormulaKey(rawKey);
-                const key = canonicalKeyFromTally(tally);
-                if (key) map[key] = recipes[rawKey];
-            }
-            return map;
-        }
-        const canonicalRecipes = buildCanonicalRecipes();
-
-const resultToRecipe = {};
-for (const key in recipes) {
-    if (!resultToRecipe[recipes[key].result]) {
-        resultToRecipe[recipes[key].result] = recipes[key];
+function itemInfo(id) {
+    if (!displayCache.has(id)) {
+        const full = elementsData[id]?.name || commonNames[id] || resultToRecipe[id]?.name || id;
+        displayCache.set(id, { full, search: (id + ' ' + full).toLocaleLowerCase() });
     }
+    return displayCache.get(id);
 }
-
-const resultElementalTally = {};
-for (const key in recipes) {
-    const result = recipes[key].result;
-    if (!resultElementalTally[result]) {
-        resultElementalTally[result] = parseFormulaKey(key);
+function getElementDisplay(id) { return itemInfo(id).full + '(' + id + ')'; }
+function getTallies(items) {
+    const ids = Object.create(null), atoms = Object.create(null);
+    for (const item of items) {
+        ids[item.id] = (ids[item.id] || 0) + 1;
+        const pure = getPureElementInfo(item.id);
+        if (pure) atoms[pure.element] = (atoms[pure.element] || 0) + pure.count;
     }
+    return { ids, atoms };
 }
-
-function getPureElementInfo(id) {
-    if (elementsData[id]) return { element: id, count: 1 };
-    const tally = resultElementalTally[id];
-    if (tally) {
-        const ids = Object.keys(tally);
-        if (ids.length === 1 && elementsData[ids[0]]) {
-            return { element: ids[0], count: tally[ids[0]] };
+function findMatchingRecipes(ids, atoms) {
+    const results = new Map();
+    for (const [index, tally] of [[recipeIndex.elemental, atoms], [recipeIndex.specific, ids]]) {
+        for (const id of Object.keys(tally)) {
+            for (const entry of index.get(id) || []) {
+                if (!entry.entries.every(([key, n]) => (tally[key] || 0) >= n)) continue;
+                const prev = results.get(entry.recipe.result);
+                if (!prev || entry.count > prev.count || (entry.count === prev.count && entry.order < prev.order)) {
+                    results.set(entry.recipe.result, entry);
+                }
+            }
         }
     }
-    return null;
+    return [...results.values()].sort((a, b) => b.count - a.count || a.order - b.order);
 }
 
-        function getTouchingCluster(startEl) {
-            // Spatial buckets reduce comparisons for a spread-out board. Dense piles remain expensive.
-            const cells=new Map(),rects=new Map(),size=180;
-            const keys=r=> { const list=[];for(let y=Math.floor(r.t/size);y<=Math.floor(r.b/size);y++)for(let x=Math.floor(r.l/size);x<=Math.floor(r.r/size);x++)list.push(x+','+y);return list; };
-            for(const el of board.querySelectorAll('.board-item')) {
-                if(el!==startEl&&el.classList.contains('in-zone'))continue;
-                const l=parseFloat(el.style.left),t=parseFloat(el.style.top);
-                const r={l,t,r:l+el.offsetWidth,b:t+el.offsetHeight};rects.set(el,r);
-                for(const key of keys(r)){if(!cells.has(key))cells.set(key,[]);cells.get(key).push(el);}
-            }
-            const visited=new Set([startEl]),queue=[startEl];
-            for(let i=0;i<queue.length;i++) {
-                const r=rects.get(queue[i]);if(!r)continue;
-                const candidates=new Set();for(const key of keys(r))for(const el of cells.get(key)||[])candidates.add(el);
-                for(const other of candidates) {if(visited.has(other))continue;const o=rects.get(other);
-                    if(r.r>=o.l&&r.l<=o.r&&r.b>=o.t&&r.t<=o.b){visited.add(other);queue.push(other);}
+// 2. Spatial index. Layout is measured when items are created or resized, never per pointer move.
+class SpatialGrid {
+    constructor(size = 180) { this.size = size; this.buckets = new Map(); }
+    keys(item) {
+        const keys = [];
+        for (let y = Math.floor(item.y / this.size); y <= Math.floor((item.y + item.h) / this.size); y++) {
+            for (let x = Math.floor(item.x / this.size); x <= Math.floor((item.x + item.w) / this.size); x++) keys.push(x + ',' + y);
+        }
+        return keys;
+    }
+    add(item) {
+        item.cells = this.keys(item);
+        for (const key of item.cells) {
+            if (!this.buckets.has(key)) this.buckets.set(key, new Set());
+            this.buckets.get(key).add(item);
+        }
+    }
+    remove(item) {
+        for (const key of item.cells || []) {
+            const bucket = this.buckets.get(key);
+            bucket?.delete(item);
+            if (bucket?.size === 0) this.buckets.delete(key);
+        }
+        item.cells = [];
+    }
+    update(item) { this.remove(item); this.add(item); }
+    clear() { this.buckets.clear(); }
+    near(item) {
+        const candidates = new Set();
+        for (const key of this.keys(item)) for (const other of this.buckets.get(key) || []) candidates.add(other);
+        return candidates;
+    }
+    cluster(start, include = () => true) {
+        const seen = new Set([start]), queue = [start], remaining = new Map();
+        const bucketFor = key => {
+            if (!remaining.has(key)) remaining.set(key, new Set([...(this.buckets.get(key) || [])].filter(item => !seen.has(item) && include(item))));
+            return remaining.get(key);
+        };
+        for (let i = 0; i < queue.length; i++) {
+            const cur = queue[i], candidates = new Set();
+            for (const key of this.keys(cur)) for (const other of bucketFor(key)) candidates.add(other);
+            for (const other of candidates) {
+                if (seen.has(other)) continue;
+                if (cur.x + cur.w >= other.x && cur.x <= other.x + other.w &&
+                    cur.y + cur.h >= other.y && cur.y <= other.y + other.h) {
+                    seen.add(other); queue.push(other);
+                    for (const key of other.cells || []) remaining.get(key)?.delete(other);
                 }
             }
-            return queue;
         }
+        return queue;
+    }
+}
+const grid = new SpatialGrid();
+let boardWidth = board.clientWidth, boardHeight = board.clientHeight;
+let zoneRect = { x: 0, y: 0, w: 0, h: 0 };
+let nextUid = 1, spawnCounter = 0, stackOrder = 1, boardRevision = 0;
+let unlocked = [...initialElements];
+const unlockedSet = new Set(unlocked), unlockedAchievements = new Set();
+let discoveryLog = Object.create(null);
+let currentTheme = 'light', currentZoneSize = 'small';
+const MAX_ITEMS = 5000;
+function measureZone() { zoneRect = { x: mixZone.offsetLeft, y: mixZone.offsetTop, w: mixZone.offsetWidth, h: mixZone.offsetHeight }; }
+function isInZone(item) {
+    const x = item.x + item.w / 2, y = item.y + item.h / 2;
+    return x >= zoneRect.x && x <= zoneRect.x + zoneRect.w && y >= zoneRect.y && y <= zoneRect.y + zoneRect.h;
+}
+function compactItem(item) { return { uid: item.uid, id: item.id, x: item.x, y: item.y }; }
+function createItemNode(item) {
+    const el = document.createElement('div');
+    el.className = 'item board-item'; el.dataset.uid = String(item.uid); el.dataset.id = item.id;
+    el.textContent = getElementDisplay(item.id); el.title = el.textContent;
+    el.tabIndex = 0; el.setAttribute('aria-label', el.textContent + ' · กด Delete เพื่อลบ');
+    el.style.left = '0px'; el.style.top = '0px'; el.style.boxSizing = 'border-box';
+    return el;
+}
+function insertItems(records, animate = false) {
+    const created = [], fragment = document.createDocumentFragment();
+    for (const record of records) {
+        if (!knownIds.has(record.id)) continue;
+        const uid = record.uid || nextUid++;
+        nextUid = Math.max(nextUid, uid + 1);
+        const item = { uid, id: record.id, x: record.x, y: record.y, w: 0, h: 0, cells: [] };
+        item.el = createItemNode(item); fragment.append(item.el); created.push(item);
+    }
+    board.append(fragment);
+    // All reads precede writes to avoid repeated synchronous layout.
+    for (const item of created) { item.w = item.el.offsetWidth; item.h = item.el.offsetHeight; }
+    for (const item of created) {
+        item.x = Math.max(0, Math.min(item.x, Math.max(0, boardWidth - item.w)));
+        item.y = Math.max(0, Math.min(item.y, Math.max(0, boardHeight - item.h)));
+        item.el.style.width = item.w + 'px';
+        item.el.style.left = item.x + 'px'; item.el.style.top = item.y + 'px';
+        boardItems.set(item.uid, item); grid.add(item);
+        item.inZone = isInZone(item); item.el.classList.toggle('in-zone', item.inZone);
+        if (animate) { item.el.classList.add('new-discovery'); setTimeout(() => item.el.classList.remove('new-discovery'), 500); }
+    }
+    boardRevision++;
+    return created;
+}
+function removeItems(items) {
+    for (const item of items) { grid.remove(item); boardItems.delete(item.uid); item.el.remove(); }
+    boardRevision++;
+}
+function positionItem(item, x, y) {
+    item.x = Math.max(0, Math.min(x, Math.max(0, boardWidth - item.w)));
+    item.y = Math.max(0, Math.min(y, Math.max(0, boardHeight - item.h)));
+    item.el.style.left = item.x + 'px'; item.el.style.top = item.y + 'px';
+    grid.update(item); item.inZone = isInZone(item); item.el.classList.toggle('in-zone', item.inZone);
+    boardRevision++;
+}
+function boardChanged() { updateZoneSummary(); saveGame(); }
+function addFromInventory(id) {
+    if (!unlockedSet.has(id)) return;
+    if (boardItems.size >= MAX_ITEMS) return notify('บอร์ดมีไอเทมมากแล้ว ลบบางส่วนก่อนเพิ่ม');
+    const idx = spawnCounter++ % 16;
+    const x = boardWidth * .32 - 50 + ((idx % 4) - 1.5) * 160;
+    const y = boardHeight * .72 - 20 + (Math.floor(idx / 4) - 1.5) * 80;
+    const created = insertItems([{ id, x, y }]);
+    pushHistory({ label: 'เพิ่มสาร', added: created.map(item => item.uid) }); boardChanged();
+}
 
-        const canonicalRecipeTallies = {};
-        for (const key in canonicalRecipes) {
-            canonicalRecipeTallies[key] = parseFormulaKey(key);
+// 3. Undo keeps deltas rather than copying the whole board for each drag.
+const undoStack = [];
+let historyWeight = 0;
+function historyCost(command) { return 1 + (command.removed?.length || 0) + (command.added?.length || 0) + (command.snapshot?.board?.length || 0); }
+function pushHistory(command) {
+    undoStack.push(command); historyWeight += historyCost(command);
+    while (undoStack.length > 100 || (historyWeight > 15000 && undoStack.length > 1)) historyWeight -= historyCost(undoStack.shift());
+    updateUndoButton();
+}
+function updateUndoButton() {
+    $('undoBtn').disabled = !undoStack.length;
+    $('undoBtn').title = undoStack.length ? 'ย้อนกลับ: ' + undoStack.at(-1).label + ' (Ctrl/Cmd+Z)' : 'ยังไม่มีการกระทำให้ย้อนกลับ';
+}
+function undo() {
+    if (drag || document.querySelector('dialog[open]')) return;
+    const command = undoStack.pop(); if (!command) return;
+    historyWeight -= historyCost(command); lastTap.uid = 0;
+    if (command.snapshot) applySave(command.snapshot, false);
+    else {
+        removeItems((command.added || []).map(uid => boardItems.get(uid)).filter(Boolean));
+        if (command.removed) insertItems(command.removed);
+        if (command.move) {
+            const item = boardItems.get(command.move.uid);
+            if (item) positionItem(item, command.move.x, command.move.y);
         }
+    }
+    updateUndoButton(); boardChanged(); notify('ย้อนกลับ: ' + command.label);
+}
+function deleteItem(item) {
+    pushHistory({ label: 'ลบสาร', removed: [compactItem(item)] });
+    removeItems([item]); boardChanged();
+}
+function clearBoard() {
+    if (drag || !boardItems.size) return;
+    pushHistory({ label: 'ล้างบอร์ด', removed: [...boardItems.values()].map(compactItem) });
+    removeItems([...boardItems.values()]); boardChanged(); notify('ล้างบอร์ดแล้ว · กด Undo เพื่อคืน');
+}
 
-        const isElementalRecipeKey = {};
-        for (const key in canonicalRecipeTallies) {
-            isElementalRecipeKey[key] = Object.keys(canonicalRecipeTallies[key]).every(id => !!elementsData[id]);
-        }
+// 4. Delegated drag handling: one listener set and at most one paint per animation frame.
+let drag = null, dragFrame = 0, lastTap = { uid: 0, time: 0 };
+function paintDrag() {
+    dragFrame = 0; if (!drag) return;
+    const { item, dx, dy } = drag;
+    item.el.style.transform = `translate3d(${dx}px,${dy}px,0)`;
+    item.el.classList.toggle('in-zone', isInZone({ ...item, x: item.x + dx, y: item.y + dy }));
+}
+function movePointer(e) {
+    if (!drag || e.pointerId !== drag.pointer) return;
+    drag.dx = Math.max(-drag.item.x, Math.min(e.clientX - drag.sx, boardWidth - drag.item.w - drag.item.x));
+    drag.dy = Math.max(-drag.item.y, Math.min(e.clientY - drag.sy, boardHeight - drag.item.h - drag.item.y));
+    if (!dragFrame) dragFrame = requestAnimationFrame(paintDrag);
+}
+function finishDrag(e, cancelled = false) {
+    if (!drag || e.pointerId !== drag.pointer) return;
+    if (!cancelled) movePointer(e);
+    if (dragFrame) cancelAnimationFrame(dragFrame); dragFrame = 0;
+    const state = drag; drag = null;
+    const { item, dx, dy } = state;
+    if (item.el.hasPointerCapture(state.pointer)) item.el.releasePointerCapture(state.pointer);
+    item.el.classList.remove('dragging'); item.el.style.transform = '';
+    const moved = Math.abs(dx) > 5 || Math.abs(dy) > 5;
+    if (cancelled) lastTap.uid = 0;
+    if (moved) {
+        pushHistory({ label: 'ย้ายสาร', move: { uid: item.uid, x: item.x, y: item.y } });
+        positionItem(item, item.x + dx, item.y + dy); lastTap.uid = 0; boardChanged();
+    } else if (!cancelled) {
+        const now = performance.now();
+        if (lastTap.uid === item.uid && now - lastTap.time < 350) { lastTap.uid = 0; deleteItem(item); return; }
+        lastTap = { uid: item.uid, time: now };
+    }
+    item.el.classList.toggle('in-zone', item.inZone);
+    if (moved && !cancelled && !item.inZone) attemptReact(grid.cluster(item, other => !other.inZone));
+}
+board.addEventListener('pointerdown', e => {
+    const el = e.target.closest('.board-item');
+    if (!el || drag || e.button !== 0) return;
+    const item = boardItems.get(Number(el.dataset.uid)); if (!item) return;
+    el.focus({ preventScroll: true }); el.setPointerCapture(e.pointerId);
+    el.style.zIndex = String(++stackOrder % 900000); el.classList.add('dragging');
+    drag = { item, pointer: e.pointerId, sx: e.clientX, sy: e.clientY, dx: 0, dy: 0 };
+});
+board.addEventListener('pointermove', movePointer);
+board.addEventListener('pointerup', e => finishDrag(e));
+board.addEventListener('pointercancel', e => finishDrag(e, true));
+board.addEventListener('lostpointercapture', e => finishDrag(e, true));
+board.addEventListener('keydown', e => {
+    if (e.key !== 'Delete' && e.key !== 'Backspace') return;
+    const el = e.target.closest('.board-item'); const item = el && boardItems.get(Number(el.dataset.uid));
+    if (item && !drag) { e.preventDefault(); deleteItem(item); }
+});
+window.addEventListener('blur', () => { if (drag) finishDrag({ pointerId: drag.pointer }, true); });
+let resizeTimer;
+function refreshGeometry() {
+    if (drag) finishDrag({ pointerId: drag.pointer }, true);
+    boardWidth = board.clientWidth; boardHeight = board.clientHeight; measureZone();
+    const items = [...boardItems.values()];
+    for (const item of items) { item.w = item.el.offsetWidth; item.h = item.el.offsetHeight; }
+    for (const item of items) positionItem(item, item.x, item.y);
+    updateZoneSummary();
+}
+window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { refreshGeometry(); saveGame(); }, 100); });
+if (document.fonts?.ready) document.fonts.ready.then(refreshGeometry);
 
-        // Index each recipe under its first required ingredient; preserve original tie order.
-        const recipeIndex={elemental:new Map(),specific:new Map()};
-        let recipeOrder=0;
-        for(const key in canonicalRecipes) {
-            const need=canonicalRecipeTallies[key],entries=Object.entries(need),elemental=isElementalRecipeKey[key];
-            const entry={recipe:canonicalRecipes[key],need,elemental,entries,count:entries.reduce((n,p)=>n+p[1],0),order:recipeOrder++};
-            const index=elemental?recipeIndex.elemental:recipeIndex.specific,anchor=entries[0]?.[0];
-            if(!index.has(anchor))index.set(anchor,[]);index.get(anchor).push(entry);
+// 5. Matching, explicit choices and atom conservation for elemental ingredients.
+function planReaction(entry, items) {
+    const consumed = [], returns = [];
+    if (!entry.elemental) {
+        const groups = new Map();
+        for (const item of items) { if (!groups.has(item.id)) groups.set(item.id, []); groups.get(item.id).push(item); }
+        for (const [id, amount] of entry.entries) {
+            const group = groups.get(id) || []; if (group.length < amount) return null;
+            consumed.push(...group.slice(0, amount));
         }
-        function findBestMatchingRecipe(idTally, elementalTally) {
-            let best=null;
-            for(const [index,tally] of [[recipeIndex.elemental,elementalTally],[recipeIndex.specific,idTally]]) {
-                for(const id in tally)for(const entry of index.get(id)||[]) {
-                    if(best&&(entry.count<best.count||(entry.count===best.count&&entry.order>best.order)))continue;
-                    if(entry.entries.every(([key,n])=>(tally[key]||0)>=n))best=entry;
-                }
+    } else {
+        for (const [element, amount] of entry.entries) {
+            let remaining = amount;
+            // Prefer single atoms/smaller chunks to minimize splitting and returned pieces.
+            const group = items.filter(item => getPureElementInfo(item.id)?.element === element)
+                .sort((a, b) => getPureElementInfo(a.id).count - getPureElementInfo(b.id).count);
+            for (const item of group) {
+                if (remaining <= 0) break;
+                const count = getPureElementInfo(item.id).count;
+                consumed.push(item); remaining -= count;
             }
-            return best;
+            if (remaining > 0) return null;
+            if (remaining < 0) returns.push({ id: element, count: -remaining });
         }
-
-        function attemptReact(items) {
-            if (items.length < 2) return false; // ต้องมีอย่างน้อย 2 ชิ้นถึงจะลองผสม
-
-            const idTally = {};
-            items.forEach(el => {
-                const id = el.dataset.id;
-                idTally[id] = (idTally[id] || 0) + 1;
-            });
-
-            const elementalTally = {};
-            items.forEach(el => {
-                const info = getPureElementInfo(el.dataset.id);
-                if (info) elementalTally[info.element] = (elementalTally[info.element] || 0) + info.count;
-            });
-
-            const match = findBestMatchingRecipe(idTally, elementalTally);
-            if (!match) return false; // ยังไม่ตรงสูตรไหนเลย ปล่อยไอเทมไว้ตามเดิม เพิ่ม/ลดอะตอมแล้วลองใหม่ได้
-
-            const { recipe, need, elemental } = match;
-
-            let consumed = [];
-            if (!elemental) {
-
-                const byId = {};
-                items.forEach(el => {
-                    const id = el.dataset.id;
-                    (byId[id] = byId[id] || []).push(el);
-                });
-                for (const atomId in need) {
-                    const list = byId[atomId];
-                    for (let i = 0; i < need[atomId]; i++) consumed.push(list[i]);
-                }
-            } else {
-
-                const collected = {};
-                for (const el of items) {
-                    const info = getPureElementInfo(el.dataset.id);
-                    if (!info) continue;
-                    const needed = need[info.element];
-                    if (!needed) continue;
-                    const have = collected[info.element] || 0;
-                    if (have < needed) {
-                        consumed.push(el);
-                        collected[info.element] = have + info.count;
-                    }
-                }
-            }
-
-            let sx = 0, sy = 0;
-            consumed.forEach(el => { sx += parseFloat(el.style.left); sy += parseFloat(el.style.top); });
-            const cx = sx / consumed.length;
-            const cy = sy / consumed.length;
-
-            consumed.forEach(el => el.remove());
-
-            let isNewDiscovery = false;
-            if (!unlockedSet.has(recipe.result)) {
-                unlockedSet.add(recipe.result);
-                unlocked.push(recipe.result);
-                isNewDiscovery = true;
-                addInventoryItem(recipe.result); // เพิ่มไอเทมใหม่แบบเร็ว ไม่ต้องรื้อสร้างทั้งลิสต์ใหม่ (ดูคอมเมนต์ที่ addInventoryItem)
-                checkAchievements(recipe.result); // เช็ก/แจ้งเตือนความสำเร็จ "สร้างสารใหม่ครบ N ชนิด" + ความสำเร็จลับ
-            }
-
-            spawnOnBoard(recipe.result, cx, cy, isNewDiscovery);
-
-            if (recipe.result === 'Tsunami') playTsunamiAnimation();
-            if (recipe.result === 'Flood') playFloodAnimation();
-
-            return true;
-        }
-
-        let tsunamiTimeout = null;
-        function playTsunamiAnimation() {
-            const overlay = document.getElementById('tsunamiOverlay');
-
-            clearTimeout(tsunamiTimeout);
-            overlay.classList.remove('playing');
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => overlay.classList.add('playing'));
-            });
-            tsunamiTimeout = setTimeout(() => overlay.classList.remove('playing'), 2300);
-        }
-
-        let floodTimeout = null;
-        function playFloodAnimation() {
-            const overlay = document.getElementById('floodOverlay');
-            clearTimeout(floodTimeout);
-            overlay.classList.remove('playing');
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => overlay.classList.add('playing'));
-            });
-            floodTimeout = setTimeout(() => overlay.classList.remove('playing'), 4000);
-        }
-
-        function checkCrafting(draggedElement) {
-            const cluster = getTouchingCluster(draggedElement);
-            attemptReact(cluster);
-        }
-
-        function getItemsInZone() {
-            const zLeft = mixZone.offsetLeft;
-            const zTop = mixZone.offsetTop;
-            const zRight = zLeft + mixZone.offsetWidth;
-            const zBottom = zTop + mixZone.offsetHeight;
-            return Array.from(document.querySelectorAll('.board-item')).filter(el => {
-                const cx = parseFloat(el.style.left) + el.offsetWidth / 2;
-                const cy = parseFloat(el.style.top) + el.offsetHeight / 2;
-                return cx >= zLeft && cx <= zRight && cy >= zTop && cy <= zBottom;
-            });
-        }
-
-        function updateZoneHighlights() {
-            const inZone = new Set(getItemsInZone());
-            document.querySelectorAll('.board-item').forEach(el => {
-                el.classList.toggle('in-zone', inZone.has(el));
-            });
-        }
-
-        const mixZoneDefaultLabel = mixZoneLabel.innerHTML;
-        let mixZoneMsgTimeout = null;
-        function showZoneMessage(msg) {
-            clearTimeout(mixZoneMsgTimeout);
-            mixZoneLabel.textContent = msg;
-            mixZoneLabel.classList.add('zone-msg-error');
-            mixZoneMsgTimeout = setTimeout(() => {
-                mixZoneLabel.innerHTML = mixZoneDefaultLabel;
-                mixZoneLabel.classList.remove('zone-msg-error');
-            }, 2200);
-        }
-
-        mixZoneBtn.onclick = () => {
-            const items = getItemsInZone();
-            if (items.length < 2) {
-                showZoneMessage('ลากอะตอมอย่างน้อย 2 ชิ้นมากองในโซนนี้ก่อนนะ');
-                return;
-            }
-            const success = attemptReact(items);
-            if (!success) {
-                showZoneMessage('ยังไม่ตรงสูตรไหนเลย ลองเพิ่ม/ลดอะตอมดู');
-            }
-            updateZoneHighlights();
+    }
+    return { consumed, returns };
+}
+function executeReaction(entry, items) {
+    const live = items.filter(item => boardItems.get(item.uid) === item);
+    const plan = planReaction(entry, live); if (!plan || !plan.consumed.length) return false;
+    const returnCount = plan.returns.reduce((n, r) => n + r.count, 0);
+    if (boardItems.size - plan.consumed.length + 1 + returnCount > MAX_ITEMS) { notify('พื้นที่บอร์ดไม่พอคืนอะตอม ลบบางส่วนก่อนรวม'); return false; }
+    const removed = plan.consumed.map(compactItem);
+    const x = removed.reduce((sum, item) => sum + item.x, 0) / removed.length;
+    const y = removed.reduce((sum, item) => sum + item.y, 0) / removed.length;
+    const inputs = getTallies(plan.consumed).ids;
+    removeItems(plan.consumed);
+    const records = [{ id: entry.recipe.result, x, y }];
+    let counter = 0;
+    for (const returned of plan.returns) for (let i = 0; i < returned.count; i++) {
+        records.push({ id: returned.id, x: x + 25 + (counter % 6) * 28, y: y + 65 + Math.floor(counter++ / 6) * 42 });
+    }
+    const isNew = !unlockedSet.has(entry.recipe.result);
+    const created = insertItems(records);
+    if (isNew) {
+        unlocked.push(entry.recipe.result); unlockedSet.add(entry.recipe.result); addInventoryItem(entry.recipe.result);
+        created[0].el.classList.add('new-discovery'); setTimeout(() => created[0].el.classList.remove('new-discovery'), 500);
+        checkAchievements(entry.recipe.result);
+    }
+    const learned = { inputs: Object.entries(inputs), returns: plan.returns.map(r => [r.id, r.count]) };
+    const log = discoveryLog[entry.recipe.result] || (discoveryLog[entry.recipe.result] = []);
+    if (log.length < 8 && !log.some(row => JSON.stringify(row) === JSON.stringify(learned))) log.push(learned);
+    pushHistory({ label: 'ผสมสาร', removed, added: created.map(item => item.uid) }); boardChanged();
+    if (returnCount) notify('สร้าง ' + itemInfo(entry.recipe.result).full + ' · คืนอะตอม ' + plan.returns.map(r => r.id + ' × ' + r.count).join(', '));
+    if (entry.recipe.result === 'Tsunami') playOverlay('tsunamiOverlay', 2300);
+    if (entry.recipe.result === 'Flood') playOverlay('floodOverlay', 4000);
+    return true;
+}
+let pendingReaction = null;
+function attemptReact(items) {
+    if (items.length < 2) return false;
+    const { ids, atoms } = getTallies(items);
+    const matches = findMatchingRecipes(ids, atoms); if (!matches.length) return false;
+    if (matches.length === 1) return executeReaction(matches[0], items);
+    pendingReaction = { items, revision: boardRevision, matches };
+    const fragment = document.createDocumentFragment();
+    for (const entry of matches) {
+        const button = document.createElement('button'); button.type = 'button'; button.className = 'dialog-action recipe-choice';
+        const title = document.createElement('strong'); title.textContent = getElementDisplay(entry.recipe.result);
+        const detail = document.createElement('small'); detail.textContent = 'ใช้ในเกม: ' + entry.entries.map(([id, n]) => id + ' × ' + n).join(' + ');
+        button.append(title, detail);
+        button.onclick = () => {
+            if (!pendingReaction || boardRevision !== pendingReaction.revision) { closeDialog('recipeDialog'); notify('บอร์ดเปลี่ยนแล้ว กรุณาลองรวมใหม่'); return; }
+            const selected = pendingReaction.items; closeDialog('recipeDialog'); executeReaction(entry, selected);
         };
+        fragment.append(button);
+    }
+    $('recipeChoices').replaceChildren(fragment); openDialog('recipeDialog'); return true;
+}
+function getItemsInZone() { return [...boardItems.values()].filter(item => item.inZone); }
+function updateZoneSummary() {
+    const items = getItemsInZone();
+    const ids = getTallies(items).ids;
+    $('zoneCountLabel').textContent = 'ในโซน ' + items.length + ' ชิ้น';
+    $('zoneCounts').textContent = items.length ? Object.entries(ids).sort(([a], [b]) => a.localeCompare(b)).map(([id, n]) => id + ' × ' + n).join(' · ') : 'ยังไม่มีสารในโซน';
+    $('zoneSummary').title = $('zoneCounts').textContent;
+}
+$('mixZoneBtn').onclick = () => {
+    const items = getItemsInZone();
+    if (items.length < 2) return notify('นำสารอย่างน้อย 2 ชิ้นเข้าโซนก่อนรวม');
+    if (!attemptReact(items)) notify('ยังไม่ตรงสูตรในเกม ลองปรับจำนวนสาร');
+};
 
-        // ===== ช่องค้นหาธาตุ/สาร ในแถบขวา =====
-
-        const inventorySearch = document.getElementById('inventorySearch');
-        let inventorySearchDebounce = null;
-        inventorySearch.addEventListener('input', () => {
-            clearTimeout(inventorySearchDebounce);
-            inventorySearchDebounce = setTimeout(renderInventory, 120);
-        });
-
-        // ===== ปุ่มล้างบอร์ด: ลบไอเทมทั้งหมดบนบอร์ด (สารตั้งต้นในแถบขวายังอยู่ครบ) =====
-        const clearBoardBtn = document.getElementById('clearBoardBtn');
-        clearBoardBtn.onclick = () => {
-            document.querySelectorAll('.item.board-item').forEach(el => el.remove());
-            updateZoneHighlights();
-        };
-
-        // ===== การตั้งค่า: โหมดสี (Light/Dark) และขนาดโซนรวมสาร =====
-        const settingsBtn = document.getElementById('settingsBtn');
-        const settingsPanel = document.getElementById('settingsPanel');
-        const themeLightBtn = document.getElementById('themeLightBtn');
-        const themeDarkBtn = document.getElementById('themeDarkBtn');
-        const zoneSizeBtns = document.querySelectorAll('.zoneSizeBtn');
-
-        settingsBtn.onclick = (e) => {
-            e.stopPropagation();
-            achievementPanel.classList.remove('open'); // ปิดแผงความสำเร็จถ้าเปิดค้างอยู่
-            settingsPanel.classList.toggle('open');
-        };
-
-        document.addEventListener('click', (e) => {
-            if (settingsPanel.classList.contains('open') &&
-                !settingsPanel.contains(e.target) &&
-                e.target !== settingsBtn) {
-                settingsPanel.classList.remove('open');
-            }
-        });
-
-        // ===== ปุ่มความสำเร็จ: เปิด/ปิดแผงรายการความสำเร็จ =====
-        const achievementBtn = document.getElementById('achievementBtn');
-        const achievementPanel = document.getElementById('achievementPanel');
-
-        achievementBtn.onclick = (e) => {
-            e.stopPropagation();
-            settingsPanel.classList.remove('open'); // ปิดแผงตั้งค่าถ้าเปิดค้างอยู่
-            achievementPanel.classList.toggle('open');
-        };
-
-        document.addEventListener('click', (e) => {
-            if (achievementPanel.classList.contains('open') &&
-                !achievementPanel.contains(e.target) &&
-                e.target !== achievementBtn) {
-                achievementPanel.classList.remove('open');
-            }
-        });
-
-        renderAchievementPanel(); // วาดแผงความสำเร็จครั้งแรก (ทุกอันยังล็อกอยู่ ณ ตอนเริ่มเกม)
-
-        function setTheme(mode) {
-            currentTheme = mode;
-            document.body.classList.toggle('dark-mode', mode === 'dark');
-            themeLightBtn.classList.toggle('active', mode === 'light');
-            themeDarkBtn.classList.toggle('active', mode === 'dark');
-            const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-            if (themeColorMeta) themeColorMeta.setAttribute('content', mode === 'dark' ? '#000000' : '#ffffff');
-            saveGame();
+// 6. Reuse inventory DOM nodes; notebook entries show only learned pairings.
+const inventoryNodeCache = new Map();
+function createInventoryItemEl(id) {
+    const el = document.createElement('div'); el.className = 'item'; el.dataset.id = id;
+    el.setAttribute('role', 'button'); el.tabIndex = 0;
+    el.textContent = getElementDisplay(id); el.title = el.textContent; return el;
+}
+function inventoryNode(id) {
+    if (!inventoryNodeCache.has(id)) inventoryNodeCache.set(id, createInventoryItemEl(id));
+    return inventoryNodeCache.get(id);
+}
+function renderInventory() {
+    const fragment = document.createDocumentFragment(), query = $('inventorySearch').value.trim().toLocaleLowerCase();
+    let count = 0;
+    for (const id of unlocked) if (!query || itemInfo(id).search.includes(query)) { fragment.append(inventoryNode(id)); count++; }
+    if (!count) { const empty = document.createElement('div'); empty.className = 'no-results'; empty.textContent = 'ไม่พบสารที่ค้นหา'; fragment.append(empty); }
+    $('inventoryItems').replaceChildren(fragment);
+}
+function addInventoryItem(id) {
+    const query = $('inventorySearch').value.trim().toLocaleLowerCase();
+    if (query && !itemInfo(id).search.includes(query)) return;
+    $('inventoryItems').querySelector('.no-results')?.remove(); $('inventoryItems').append(inventoryNode(id));
+}
+$('inventoryItems').addEventListener('click', e => { const item = e.target.closest('.item'); if (item) addFromInventory(item.dataset.id); });
+$('inventoryItems').addEventListener('keydown', e => {
+    const item = e.target.closest('.item'); if (item && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); addFromInventory(item.dataset.id); }
+});
+let searchTimer;
+$('inventorySearch').oninput = () => { clearTimeout(searchTimer); searchTimer = setTimeout(renderInventory, 80); };
+let notebookLimit = 40;
+function formatPairing(entries) { return entries.map(([id, n]) => getElementDisplay(id) + ' × ' + n).join(' + '); }
+function renderNotebook() {
+    const query = $('notebookSearch').value.trim().toLocaleLowerCase();
+    const ids = unlocked.filter(id => !elementSet.has(id) && (!query || itemInfo(id).search.includes(query))).reverse();
+    $('notebookCount').textContent = 'ค้นพบ ' + (unlocked.length - initialElements.length) + ' ชนิด · ตรงคำค้น ' + ids.length + ' ชนิด';
+    const fragment = document.createDocumentFragment();
+    for (const id of ids.slice(0, notebookLimit)) {
+        const detail = document.createElement('details'); detail.className = 'notebook-entry';
+        const summary = document.createElement('summary'); summary.textContent = getElementDisplay(id); detail.append(summary);
+        const log = discoveryLog[id] || [];
+        const hint = document.createElement('p'); hint.textContent = log.length ? 'การจับคู่ที่เคยสร้างสำเร็จ:' : 'พบในเซฟเดิม · เมื่อสร้างอีกครั้ง เกมจะจดการจับคู่ไว้ที่นี่'; detail.append(hint);
+        if (log.length) {
+            const list = document.createElement('ul');
+            for (const row of log) { const line = document.createElement('li'); line.textContent = formatPairing(row.inputs) + (row.returns.length ? ' · คืน ' + formatPairing(row.returns) : ''); list.append(line); }
+            detail.append(list);
         }
-        themeLightBtn.onclick = () => setTheme('light');
-        themeDarkBtn.onclick = () => setTheme('dark');
+        fragment.append(detail);
+    }
+    if (!ids.length) { const p = document.createElement('p'); p.className = 'dialog-description'; p.textContent = query ? 'ไม่พบสารที่ตรงกับคำค้น' : 'เริ่มผสมสารบนบอร์ด สารที่ค้นพบจะมาอยู่ในสมุดนี้'; fragment.append(p); }
+    $('notebookList').replaceChildren(fragment); $('notebookMore').hidden = ids.length <= notebookLimit;
+}
+$('notebookBtn').onclick = () => { notebookLimit = 40; renderNotebook(); openDialog('notebookDialog'); };
+$('notebookSearch').oninput = () => { notebookLimit = 40; renderNotebook(); };
+$('notebookMore').onclick = () => { notebookLimit += 40; renderNotebook(); };
 
-        function setZoneSize(size) {
-            currentZoneSize = size;
-            mixZone.classList.remove('zone-small', 'zone-medium', 'zone-large');
-            mixZone.classList.add('zone-' + size);
-            zoneSizeBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.size === size));
-            updateZoneHighlights(); // อัปเดตว่าไอเทมไหนอยู่ในโซนบ้างหลังขนาดเปลี่ยน
-            saveGame();
+// 7. Versioned saves, bounded import validation and legacy migration.
+const SAVE_KEY = 'chemcraft_save_v1';
+let saveTimer = 0, saveIdle = 0, savingReady = false;
+function captureSave() {
+    return {
+        app: 'ChemCraft', schemaVersion: 3, unlocked: [...unlocked],
+        unlockedAchievements: [...unlockedAchievements], discoveryCount: unlocked.length - initialElements.length,
+        theme: currentTheme, zoneSize: currentZoneSize, discoveryLog,
+        viewport: { width: boardWidth, height: boardHeight },
+        board: [...boardItems.values()].map(compactItem)
+    };
+}
+function saveGame() {
+    if (!savingReady) return;
+    $('saveIndicator').textContent = 'กำลังบันทึก…';
+    clearTimeout(saveTimer);
+    if (saveIdle && window.cancelIdleCallback) window.cancelIdleCallback(saveIdle);
+    saveTimer = setTimeout(() => {
+        if (window.requestIdleCallback) saveIdle = window.requestIdleCallback(flushSave, { timeout: 1200 });
+        else flushSave();
+    }, 250);
+}
+function flushSave() {
+    if (!savingReady) return;
+    clearTimeout(saveTimer); saveTimer = 0;
+    if (saveIdle && window.cancelIdleCallback) window.cancelIdleCallback(saveIdle); saveIdle = 0;
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(captureSave())); $('saveIndicator').textContent = 'บันทึกบนเครื่องแล้ว'; }
+    catch { $('saveIndicator').textContent = 'บันทึกบนเครื่องไม่ได้ · ใช้ส่งออกเซฟ'; }
+}
+function normalizeSave(raw, strict = false) {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw Error('รูปแบบเซฟไม่ถูกต้อง');
+    if (raw.app && raw.app !== 'ChemCraft') throw Error('ไฟล์นี้ไม่ใช่เซฟ ChemCraft');
+    if (raw.schemaVersion != null && (!Number.isInteger(raw.schemaVersion) || raw.schemaVersion < 1 || raw.schemaVersion > 3)) throw Error('รุ่นของเซฟนี้ยังไม่รองรับ');
+    if (!Array.isArray(raw.unlocked) || raw.unlocked.length > knownIds.size + 118) throw Error('รายการสารในเซฟไม่ถูกต้อง');
+    const ids = new Set(initialElements);
+    for (const id of raw.unlocked) {
+        if (typeof id !== 'string') throw Error('ชื่อสารในเซฟไม่ถูกต้อง');
+        if (knownIds.has(id)) ids.add(id); else if (strict) throw Error('เซฟมีสารที่ไม่มีในเกมรุ่นนี้');
+    }
+    const savedBoard = raw.board ?? [];
+    if (!Array.isArray(savedBoard) || savedBoard.length > MAX_ITEMS) throw Error('จำนวนไอเทมในเซฟเกินที่รองรับ');
+    const items = [];
+    for (const item of savedBoard) {
+        if (!item || !knownIds.has(item.id) || !Number.isFinite(item.x) || !Number.isFinite(item.y) || Math.abs(item.x) > 1e6 || Math.abs(item.y) > 1e6) throw Error('ข้อมูลตำแหน่งไอเทมในเซฟไม่ถูกต้อง');
+        ids.add(item.id); items.push({ id: item.id, x: item.x, y: item.y });
+    }
+    const log = Object.create(null);
+    const validPairs = list => Array.isArray(list) && list.length <= 118 && list.every(pair => Array.isArray(pair) && pair.length === 2 && knownIds.has(pair[0]) && Number.isInteger(pair[1]) && pair[1] > 0 && pair[1] <= 10000);
+    if (raw.discoveryLog && typeof raw.discoveryLog === 'object') {
+        for (const [id, rows] of Object.entries(raw.discoveryLog)) {
+            if (!ids.has(id) || !Array.isArray(rows)) continue;
+            log[id] = rows.slice(0, 8).filter(row => row && validPairs(row.inputs) && row.inputs.length && validPairs(row.returns)).map(row => ({ inputs: row.inputs.map(pair => [...pair]), returns: row.returns.map(pair => [...pair]) }));
         }
-        zoneSizeBtns.forEach(btn => {
-            btn.onclick = () => setZoneSize(btn.dataset.size);
-        });
+    }
+    const achievementIds = new Set(achievements.map(a => a.id));
+    const savedAchievements = Array.isArray(raw.unlockedAchievements) ? raw.unlockedAchievements.filter(id => achievementIds.has(id)) : [];
+    const viewport = raw.viewport;
+    return {
+        app: 'ChemCraft', schemaVersion: 3, unlocked: [...ids], board: items, discoveryLog: log,
+        theme: raw.theme === 'dark' ? 'dark' : 'light', zoneSize: ['small', 'medium', 'large'].includes(raw.zoneSize) ? raw.zoneSize : 'small',
+        unlockedAchievements: savedAchievements,
+        viewport: viewport && Number.isFinite(viewport.width) && viewport.width > 0 && Number.isFinite(viewport.height) && viewport.height > 0 ? { width: viewport.width, height: viewport.height } : null
+    };
+}
+function applySave(state, resetHistory = true) {
+    if (drag) finishDrag({ pointerId: drag.pointer }, true);
+    removeItems([...boardItems.values()]); grid.clear();
+    unlocked = [...state.unlocked]; unlockedSet.clear(); unlocked.forEach(id => unlockedSet.add(id));
+    unlockedAchievements.clear(); (state.unlockedAchievements || []).forEach(id => unlockedAchievements.add(id));
+    discoveryLog = JSON.parse(JSON.stringify(state.discoveryLog || {}));
+    setTheme(state.theme, false); setZoneSize(state.zoneSize, false);
+    boardWidth = board.clientWidth; boardHeight = board.clientHeight; measureZone();
+    const sx = state.viewport?.width ? Math.min(1, boardWidth / state.viewport.width) : 1;
+    const sy = state.viewport?.height ? Math.min(1, boardHeight / state.viewport.height) : 1;
+    insertItems(state.board.map(item => ({ ...item, x: item.x * sx, y: item.y * sy })));
+    if (resetHistory) { undoStack.length = 0; historyWeight = 0; }
+    renderInventory(); checkAchievements(null, false); updateZoneSummary(); updateUndoButton();
+}
+function exportSave() {
+    if (drag) finishDrag({ pointerId: drag.pointer }, true);
+    flushSave();
+    const blob = new Blob([JSON.stringify(captureSave(), null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob), a = document.createElement('a');
+    a.href = url; a.download = 'chemcraft-save-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    notify('ส่งออกเซฟแล้ว · นำไฟล์ JSON ไปนำเข้าบนอีกเครื่องได้');
+}
+let pendingImport = null;
+$('importFile').onchange = async e => {
+    const file = e.target.files[0]; e.target.value = ''; if (!file) return;
+    if (file.size > 2 * 1024 * 1024) return notify('ไฟล์เซฟต้องมีขนาดไม่เกิน 2 MB');
+    try {
+        const state = normalizeSave(JSON.parse(await file.text()), true);
+        pendingImport = state;
+        $('importSummary').textContent = 'เซฟนี้มีสารที่ค้นพบ ' + (state.unlocked.length - initialElements.length) + ' ชนิด และไอเทมบนบอร์ด ' + state.board.length + ' ชิ้น';
+        openDialog('importDialog');
+    } catch (error) { pendingImport = null; notify('นำเข้าไม่ได้: ' + error.message); }
+};
+$('confirmImport').onclick = () => {
+    if (!pendingImport) return;
+    const state = pendingImport, before = JSON.parse(JSON.stringify(captureSave())); closeDialog('importDialog');
+    pushHistory({ label: 'นำเข้าเซฟ', snapshot: before }); applySave(state, false); boardChanged(); notify('นำเข้าเซฟเรียบร้อย');
+};
+window.addEventListener('pagehide', () => { if (drag) finishDrag({ pointerId: drag.pointer }, true); flushSave(); });
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { if (drag) finishDrag({ pointerId: drag.pointer }, true); flushSave(); if (benchmarkRunning) cancelBenchmark(); }
+});
 
-        // ===== โหลดเซฟเก่า (ถ้ามี) มาทับค่าเริ่มต้น ก่อนเรนเดอร์ครั้งแรกของทุกอย่าง =====
-        const savedGame = loadGame();
-        if (savedGame) {
-            if (Array.isArray(savedGame.unlocked)) {
-                savedGame.unlocked.forEach(id => {
-                    if ((elementsData[id] || resultToRecipe[id]) && !unlockedSet.has(id)) { unlockedSet.add(id); unlocked.push(id); }
-                });
-            }
-            discoveryCount = unlocked.filter(id=>!elementsData[id]).length;
-            if (Array.isArray(savedGame.unlockedAchievements)) {
-                savedGame.unlockedAchievements.forEach(id => unlockedAchievements.add(id));
-            }
+// 8. Existing appearance, settings, achievements and animated discoveries.
+let noticeTimer;
+function notify(message) {
+    clearTimeout(noticeTimer); $('notice').textContent = message; $('notice').hidden = false;
+    noticeTimer = setTimeout(() => { $('notice').hidden = true; }, 4200);
+}
+function setTheme(mode, save = true) {
+    currentTheme = mode === 'dark' ? 'dark' : 'light';
+    document.body.classList.toggle('dark-mode', currentTheme === 'dark');
+    $('themeLightBtn').classList.toggle('active', currentTheme === 'light'); $('themeDarkBtn').classList.toggle('active', currentTheme === 'dark');
+    document.querySelector('meta[name="theme-color"]').content = currentTheme === 'dark' ? '#000000' : '#ffffff';
+    if (save) saveGame();
+}
+let zoneTimer;
+function setZoneSize(size, save = true) {
+    currentZoneSize = ['small', 'medium', 'large'].includes(size) ? size : 'small';
+    mixZone.classList.remove('zone-small', 'zone-medium', 'zone-large'); mixZone.classList.add('zone-' + currentZoneSize);
+    document.querySelectorAll('.zoneSizeBtn').forEach(button => button.classList.toggle('active', button.dataset.size === currentZoneSize));
+    clearTimeout(zoneTimer); measureZone();
+    for (const item of boardItems.values()) { item.inZone = isInZone(item); item.el.classList.toggle('in-zone', item.inZone); }
+    updateZoneSummary(); zoneTimer = setTimeout(refreshGeometry, 230);
+    if (save) saveGame();
+}
+function renderAchievements() {
+    $('achievementPanelSubtitle').textContent = 'สร้างสารใหม่ไปแล้ว ' + (unlocked.length - initialElements.length) + ' ชนิด';
+    $('achievementBadge').textContent = unlockedAchievements.size + '/' + achievements.length;
+    const fragment = document.createDocumentFragment();
+    for (const ach of achievements) {
+        const done = unlockedAchievements.has(ach.id), row = document.createElement('div'); row.className = 'achievement-item' + (done ? ' unlocked' : '');
+        const icon = document.createElement('span'); icon.className = 'achievement-icon'; icon.textContent = ach.secret && !done ? '❓' : ach.icon;
+        const text = document.createElement('div'); text.className = 'achievement-text';
+        const title = document.createElement('div'); title.className = 'achievement-title'; title.textContent = ach.secret && !done ? '???' : ach.title;
+        const desc = document.createElement('div'); desc.className = 'achievement-desc'; desc.textContent = ach.secret && !done ? '???' : ach.desc + (!done && ach.count ? ' (' + (unlocked.length - initialElements.length) + '/' + ach.count + ')' : '');
+        text.append(title, desc); row.append(icon, text); fragment.append(row);
+    }
+    $('achievementList').replaceChildren(fragment);
+}
+function checkAchievements(result, announce = true) {
+    for (const ach of achievements) {
+        if (unlockedAchievements.has(ach.id)) continue;
+        const met = ach.trigger ? (result === ach.trigger || unlockedSet.has(ach.trigger)) : unlocked.length - initialElements.length >= ach.count;
+        if (!met) continue;
+        unlockedAchievements.add(ach.id);
+        if (announce) {
+            const toast = document.createElement('div'); toast.className = 'achievement-toast'; toast.textContent = ach.icon + ' ปลดล็อก: ' + ach.title;
+            $('achievementToastLayer').append(toast); setTimeout(() => toast.remove(), 4400);
         }
-        renderAchievementPanel(); // วาดแผงความสำเร็จครั้งแรก (สะท้อนเซฟเก่าถ้ามี ไม่งั้นทุกอันล็อกอยู่)
-        setTheme(savedGame && savedGame.theme === 'dark' ? 'dark' : 'light');
-        setZoneSize(savedGame && ['small', 'medium', 'large'].includes(savedGame.zoneSize) ? savedGame.zoneSize : 'small');
+    }
+    renderAchievements();
+}
+const overlayTimers = new Map();
+function playOverlay(id, duration) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const overlay = $(id); clearTimeout(overlayTimers.get(id)); overlay.classList.remove('playing');
+    requestAnimationFrame(() => requestAnimationFrame(() => overlay.classList.add('playing')));
+    overlayTimers.set(id, setTimeout(() => overlay.classList.remove('playing'), duration));
+}
+function openDialog(id) { $('settingsPanel').classList.remove('open'); $('achievementPanel').classList.remove('open'); $(id).showModal(); }
+function closeDialog(id) { $(id).close(); }
+document.querySelectorAll('[data-close]').forEach(button => { button.onclick = () => closeDialog(button.dataset.close); });
+$('recipeDialog').addEventListener('close', () => { pendingReaction = null; $('recipeChoices').replaceChildren(); });
+$('importDialog').addEventListener('close', () => { pendingImport = null; });
+$('undoBtn').onclick = undo; $('clearBoardBtn').onclick = clearBoard;
+$('exportSaveBtn').onclick = exportSave; $('importSaveBtn').onclick = () => $('importFile').click();
+$('themeLightBtn').onclick = () => setTheme('light'); $('themeDarkBtn').onclick = () => setTheme('dark');
+document.querySelectorAll('.zoneSizeBtn').forEach(button => { button.onclick = () => setZoneSize(button.dataset.size); });
+for (const [button, panel, other] of [['settingsBtn', 'settingsPanel', 'achievementPanel'], ['achievementBtn', 'achievementPanel', 'settingsPanel']]) {
+    $(button).onclick = e => { e.stopPropagation(); $(other).classList.remove('open'); $(panel).classList.toggle('open'); };
+}
+document.addEventListener('click', e => {
+    for (const [panel, button] of [['settingsPanel', 'settingsBtn'], ['achievementPanel', 'achievementBtn']]) {
+        if (!$(panel).contains(e.target) && !$(button).contains(e.target)) $(panel).classList.remove('open');
+    }
+});
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { $('settingsPanel').classList.remove('open'); $('achievementPanel').classList.remove('open'); }
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !e.shiftKey &&
+        !e.target.closest('input,textarea,[contenteditable=true]') && !document.querySelector('dialog[open]')) { e.preventDefault(); undo(); }
+});
 
-        renderInventory();
+// 9. A bounded benchmark on a separate visible surface; it never modifies the game or its save.
+let benchmarkRunning = false, benchmarkGeneration = 0;
+$('performanceBtn').onclick = () => openDialog('perfDialog');
+function cancelBenchmark() {
+    benchmarkGeneration++; benchmarkRunning = false; $('runBenchmark').disabled = false;
+    $('perfStage').replaceChildren(); $('perfStatus').textContent = 'หยุดทดสอบแล้ว';
+}
+$('perfDialog').addEventListener('close', () => { if (benchmarkRunning) cancelBenchmark(); });
+$('runBenchmark').onclick = async () => {
+    if (benchmarkRunning) return;
+    const generation = ++benchmarkGeneration; benchmarkRunning = true; $('runBenchmark').disabled = true; $('perfResults').replaceChildren();
+    const stage = $('perfStage'), width = stage.clientWidth, height = stage.clientHeight;
+    const frame = () => new Promise(resolve => requestAnimationFrame(resolve));
+    try {
+        for (const count of [100, 300, 1000]) {
+            if (generation !== benchmarkGeneration) return;
+            $('perfStatus').textContent = 'กำลังทดสอบ ' + count.toLocaleString() + ' ไอเทม…';
+            const fragment = document.createDocumentFragment(), models = [], localGrid = new SpatialGrid();
+            for (let i = 0; i < count; i++) {
+                const x = (i * 97) % Math.max(1, width - 90), y = (i * 53) % Math.max(1, height - 32);
+                const el = document.createElement('div'); el.className = 'item'; el.textContent = 'ฮีเลียม(He)';
+                el.style.left = x + 'px'; el.style.top = y + 'px'; fragment.append(el);
+                const model = { x, y, w: 90, h: 32, cells: [], el }; models.push(model); localGrid.add(model);
+            }
+            stage.replaceChildren(fragment); await frame(); await frame();
+            if (generation !== benchmarkGeneration) return;
+            const times = []; let previous = await frame();
+            for (let i = 0; i < 90; i++) {
+                const now = await frame();
+                if (generation !== benchmarkGeneration || document.hidden) return;
+                times.push(now - previous); previous = now;
+                models[0].el.style.transform = `translate3d(${Math.sin(i / 10) * 35}px,0,0)`;
+            }
+            const t0 = performance.now(); localGrid.cluster(models[0]); const clusterMs = performance.now() - t0;
+            const t1 = performance.now(); for (let i = 0; i < 100; i++) findMatchingRecipes({ H: 2, O: 1 }, { H: 2, O: 1 });
+            const recipeMs = (performance.now() - t1) / 100;
+            const average = times.reduce((a, b) => a + b, 0) / times.length;
+            times.sort((a, b) => a - b); const p95 = times[Math.ceil(times.length * .95) - 1];
+            const row = document.createElement('tr');
+            for (const value of [count.toLocaleString(), (1000 / average).toFixed(1), p95.toFixed(1), clusterMs.toFixed(2), recipeMs.toFixed(3)]) {
+                const td = document.createElement('td'); td.textContent = value; row.append(td);
+            }
+            $('perfResults').append(row);
+        }
+        $('perfStatus').textContent = 'ทดสอบครบแล้ว · พื้นที่ ' + width + ' × ' + height + ' px';
+    } catch (error) { $('perfStatus').textContent = 'ทดสอบไม่สำเร็จ: ' + error.message; }
+    finally { if (generation === benchmarkGeneration) { benchmarkRunning = false; $('runBenchmark').disabled = false; stage.replaceChildren(); } }
+};
 
-    </script>
+// 10. Startup preserves legacy discoveries and restores board items after layout is available.
+measureZone();
+try {
+    const text = localStorage.getItem(SAVE_KEY);
+    if (text) { applySave(normalizeSave(JSON.parse(text))); $('saveIndicator').textContent = 'โหลดเซฟแล้ว'; }
+    else { setTheme('light', false); setZoneSize('small', false); renderInventory(); renderAchievements(); updateUndoButton(); $('saveIndicator').textContent = 'บันทึกอัตโนมัติบนเครื่องนี้'; }
+} catch (error) {
+    setTheme('light', false); setZoneSize('small', false); renderInventory(); renderAchievements(); updateUndoButton();
+    $('saveIndicator').textContent = 'อ่านเซฟไม่ได้ · ใช้นำเข้าเซฟเพื่อกู้คืน';
+}
+savingReady = true;
+
+</script>
 </body>
 </html>
